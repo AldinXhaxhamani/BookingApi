@@ -1,4 +1,5 @@
 ﻿using Booking.Domain.Entities;
+using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -36,19 +37,9 @@ namespace Booking.Infrastructure
                 .WithMany() 
                 .HasForeignKey(ur => ur.RoleId);
 
-            base.OnModelCreating(modelBuilder);
-
-
-
 
             base.OnModelCreating(modelBuilder);
-
-    
 
         }
-
-
-
-
     }
 }

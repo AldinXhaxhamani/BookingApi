@@ -1,4 +1,5 @@
 ﻿using Booking.Domain.Enum;
+using Booking.Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,6 +31,8 @@ namespace Booking.Domain.Entities
         public DateTime? CompletedAtUtc { get; set; }
         public DateTime? CanceledAtUtc { get; set; }
 
+
+       // public List<>//Lista e amenties, enum i krijuar
 
 
         public Property Property { get; set; }
