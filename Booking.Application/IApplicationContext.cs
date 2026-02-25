@@ -1,4 +1,6 @@
-﻿using Booking.Domain.Users;
+﻿using Booking.Domain.Apartments;
+using Booking.Domain.Entities;
+using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,9 @@ namespace Booking.Application
     {
         public DbSet<User> Users { get; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        public DbSet<Property> Properties { get; }
+        public DbSet<OwnerProfile> Owners { get; }
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
 

@@ -1,11 +1,13 @@
-﻿using Booking.Domain.Entities;
+﻿using Booking.Application;
+using Booking.Domain.Apartments;
+using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Booking.Infrastructure
 {
-    public class BookingDbContext : DbContext
+    public class BookingDbContext : DbContext, IApplicationContext
     {
         public BookingDbContext(DbContextOptions<BookingDbContext> op) : base(op){ 
         }
@@ -25,17 +27,28 @@ namespace Booking.Infrastructure
 
 
             modelBuilder.Entity<UserRole>()
-     .HasKey(ur => new { ur.UserId, ur.RoleId });
+                .HasKey(ur => new { ur.UserId, ur.RoleId });
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.User)
-                .WithMany() 
+                .WithMany(u => u.UserRoles) 
                 .HasForeignKey(ur => ur.UserId);
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Role)
-                .WithMany() 
+                .WithMany(u => u.UserRoles) 
                 .HasForeignKey(ur => ur.RoleId);
+
+
+            modelBuilder.Entity<Property>()
+                .HasOne(p => p.Owner)
+                .WithMany()
+                .HasForeignKey(p => p.OwnerId)      
+                .HasPrincipalKey(o => o.UserId);    
+
+
+
+
 
 
             base.OnModelCreating(modelBuilder);

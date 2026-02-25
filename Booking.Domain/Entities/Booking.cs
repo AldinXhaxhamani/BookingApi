@@ -1,4 +1,5 @@
-﻿using Booking.Domain.Enum;
+﻿using Booking.Domain.Apartments;
+using Booking.Domain.Enum;
 using Booking.Domain.Users;
 using System;
 using System.Collections.Generic;

@@ -12,7 +12,7 @@ namespace Booking.Application.Users.Register
     {
 
         private readonly IUserRepository _userRepository;
-        //private readonly IApplicationContext _applicationContext;
+        private readonly IApplicationContext _applicationContext;
 
         public RegisterUserCommandHandler(
             IUserRepository userRepository
@@ -20,7 +20,7 @@ namespace Booking.Application.Users.Register
             )
         {
             _userRepository = userRepository;
-           // _applicationContext = applicationContext;
+           //_applicationContext = applicationContext;
         }
 
         
@@ -28,30 +28,18 @@ namespace Booking.Application.Users.Register
             RegisterUserCommand request,
             CancellationToken cancellationToken)
         {
-            Console.WriteLine("1) entered handler");
-
+            
             var password= request.createUserDto.Password;
 
-           // request.createUserDto.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password,13);
-            Console.WriteLine("2) after request password");
-
-            Console.WriteLine("3) para krijimit te user");
+           request.createUserDto.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password,13);
+          
             var user = User.CreateUser(request.createUserDto);
-            Console.WriteLine("4) pas krijimit te userit");
-
-
-            Console.WriteLine("5) before add");
+           
             await _userRepository.Add(user);
-            Console.WriteLine("6) after add");
-
-            Console.WriteLine("7) before save");
 
             await _userRepository.SaveChangesAsync();
 
-           // await _applicationContext.SaveChangesAsync();
-
-            Console.WriteLine("8) after save    ");
-
+            //await _applicationContext.SaveChangesAsync(); 
             return user.Id;
 
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Booking.Domain.Apartments;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;

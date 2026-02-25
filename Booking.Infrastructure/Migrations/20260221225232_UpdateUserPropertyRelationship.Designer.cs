@@ -4,6 +4,7 @@ using Booking.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Infrastructure.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    partial class BookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221225232_UpdateUserPropertyRelationship")]
+    partial class UpdateUserPropertyRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,67 +24,6 @@ namespace Booking.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Booking.Domain.Apartments.Property", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CheckInTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CheckOutTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastBookedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MaxGuests")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertyType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Properties");
-                });
 
             modelBuilder.Entity("Booking.Domain.Entities.Address", b =>
                 {
@@ -188,6 +130,7 @@ namespace Booking.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreditCard")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdentityCardNumber")
@@ -203,6 +146,68 @@ namespace Booking.Infrastructure.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Owners");
+                });
+
+            modelBuilder.Entity("Booking.Domain.Entities.Property", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AddressId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CheckInTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CheckOutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastBookedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxGuests")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PropertyType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Properties");
                 });
 
             modelBuilder.Entity("Booking.Domain.Entities.Review", b =>
@@ -267,9 +272,19 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("RoleId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("UserRoles");
                 });
@@ -317,7 +332,37 @@ namespace Booking.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Booking.Domain.Apartments.Property", b =>
+            modelBuilder.Entity("Booking.Domain.Entities.Booking", b =>
+                {
+                    b.HasOne("Booking.Domain.Users.User", "Guest")
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking.Domain.Entities.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guest");
+
+                    b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("Booking.Domain.Entities.OwnerProfile", b =>
+                {
+                    b.HasOne("Booking.Domain.Users.User", "User")
+                        .WithOne("Owner")
+                        .HasForeignKey("Booking.Domain.Entities.OwnerProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Booking.Domain.Entities.Property", b =>
                 {
                     b.HasOne("Booking.Domain.Entities.Address", "Address")
                         .WithMany("Properties")
@@ -338,36 +383,6 @@ namespace Booking.Infrastructure.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("Booking.Domain.Entities.Booking", b =>
-                {
-                    b.HasOne("Booking.Domain.Users.User", "Guest")
-                        .WithMany()
-                        .HasForeignKey("GuestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Booking.Domain.Apartments.Property", "Property")
-                        .WithMany()
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guest");
-
-                    b.Navigation("Property");
-                });
-
-            modelBuilder.Entity("Booking.Domain.Entities.OwnerProfile", b =>
-                {
-                    b.HasOne("Booking.Domain.Users.User", "User")
-                        .WithOne("Owner")
-                        .HasForeignKey("Booking.Domain.Entities.OwnerProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Booking.Domain.Entities.Review", b =>
@@ -392,16 +407,24 @@ namespace Booking.Infrastructure.Migrations
             modelBuilder.Entity("Booking.Domain.Entities.UserRole", b =>
                 {
                     b.HasOne("Booking.Domain.Entities.Role", "Role")
-                        .WithMany("UserRoles")
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Booking.Domain.Entities.Role", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("RoleId1");
+
                     b.HasOne("Booking.Domain.Users.User", "User")
-                        .WithMany("UserRoles")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Booking.Domain.Users.User", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Role");
 
@@ -420,7 +443,7 @@ namespace Booking.Infrastructure.Migrations
 
             modelBuilder.Entity("Booking.Domain.Entities.Role", b =>
                 {
-                    b.Navigation("UserRoles");
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("Booking.Domain.Users.User", b =>

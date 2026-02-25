@@ -1,7 +1,10 @@
 ﻿using Booking.Application;
+using Booking.Application.Apartaments;
 using Booking.Application.Users;
+using Booking.Infrastructure.Apartments;
 using Booking.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,12 +21,15 @@ namespace Booking.Infrastructure
                 configuration.GetConnectionString("BookingConnString")));
 
 
-            //shtim pas run-imit **
-            services.AddScoped<IApplicationContext>(sp =>
-           sp.GetRequiredService<IApplicationContext>());
+            services.AddScoped<IApplicationContext>(
+            sp => sp.GetRequiredService<BookingDbContext>());
 
-            // Register repository
+
+            // Register repositorys
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPropertyRepository, PropertyRepository>();
 
             return services;
 

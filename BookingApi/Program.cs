@@ -1,5 +1,7 @@
 using Booking.Application;
+using Booking.Application.Apartaments.Register;
 using Booking.Application.Users.Register;
+using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
@@ -99,6 +101,26 @@ app.MapPost("/api/user/register",
         return Results.Ok(id);
     });
 
+
+app.MapPost("/api/property/register",   
+    async (CreatePropertyDto dto, [FromServices] IMediator mediator, CancellationToken ct) =>
+    {
+        Console.WriteLine("1. Start");
+        var command = new RegisterPropertyCommand
+        {
+            createPropertyDto = dto
+        };
+        Console.WriteLine("2. Start");
+
+        using var scope = app.Services.CreateScope();
+        var handler = scope.ServiceProvider.GetService<IRequestHandler<RegisterPropertyCommand, Guid>>();
+        Console.WriteLine(handler is null ? "Handler NOT registered" : "Handler registered");
+
+        var id = await mediator.Send(command, ct);
+        Console.WriteLine("3. Start");
+        //return Results.Created($"/api/users/{id}", new { id });
+        return Results.Ok(id);
+    });
 
 
 //Testimi i lidhjes me db

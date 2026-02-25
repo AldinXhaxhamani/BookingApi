@@ -14,18 +14,18 @@ namespace Booking.Domain.Entities
         public string IdentityCardNumber { get; set; }
         public bool VerificationStatus { get; set; }=false;
         public string? BusinessName { get; set; }
-        public string CreditCard { get; set; }
+        public string? CreditCard { get; set; }
         public DateTime CreatedAt { get; set; }=DateTime.Now;
         public DateTime? LastModifiedAt { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
-        public List <Property> Properties { get; set; }=new List<Property>();
+       
 
 
-        public OwnerProfile(string identityCardNumber, bool verificationStatus, string? businessName, string creditCard)
+        public OwnerProfile(Guid userId,string identityCardNumber, bool verificationStatus, string? businessName, string creditCard)
         {
-            UserId= Guid.NewGuid() ;
+            UserId= userId;
             IdentityCardNumber = identityCardNumber;
             VerificationStatus = verificationStatus;
             BusinessName = businessName;
@@ -34,5 +34,6 @@ namespace Booking.Domain.Entities
             LastModifiedAt = DateTime.UtcNow;
         }
 
+        private OwnerProfile() { }
     }
 }

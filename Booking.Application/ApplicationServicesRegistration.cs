@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Text;
 using MediatR;
 using Booking.Application.Users.Register;
+using Microsoft.Extensions.DependencyInjection;
+using MediatR;
+
 
 namespace Booking.Application
 
@@ -17,16 +20,8 @@ namespace Booking.Application
         {
            
 
-            /*
-            //shtimi manual i serviseve
-            services.AddScoped<
-                IRequestHandler<RegisterUserCommand, Guid>,
-                RegisterUserCommandHandler>();*/
-
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(ApplicationServicesRegistration).Assembly));
-
-
 
             return services;
         }
