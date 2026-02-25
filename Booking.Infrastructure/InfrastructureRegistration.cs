@@ -3,11 +3,14 @@ using Booking.Application.Apartaments;
 using Booking.Application.Users;
 using Booking.Infrastructure.Apartments;
 using Booking.Infrastructure.Users;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Text;
 
 namespace Booking.Infrastructure
 {
@@ -30,6 +33,42 @@ namespace Booking.Infrastructure
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPropertyRepository, PropertyRepository>();
+
+
+
+            services.Configure<JwtSettings>(
+                configuration.GetSection("JwtSettings"));
+
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+            var jwtSettings = configuration
+                .GetSection("JwtSettings")
+                .Get<JwtSettings>()!;
+
+            var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+
+            services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,   
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
+
+            services.AddAuthorization();
+
 
             return services;
 

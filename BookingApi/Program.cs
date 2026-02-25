@@ -24,7 +24,8 @@ builder.Services.ConfigureApplicationServices();
 
 var app = builder.Build();
 
-
+app.UseAuthentication();
+app.UseAuthorization();
 /*
  * shtimi manual i nje useri ne db
  
@@ -99,7 +100,7 @@ app.MapPost("/api/user/register",
         var id = await mediator.Send(command, ct);
         //return Results.Created($"/api/users/{id}", new { id });
         return Results.Ok(id);
-    });
+    }).RequireAuthorization(policy => policy.RequireRole("User"));
 
 
 app.MapPost("/api/property/register",   

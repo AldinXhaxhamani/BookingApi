@@ -16,5 +16,16 @@ namespace Booking.Infrastructure.Users
         {
            _dbContext = dbContext;
         }
+
+
+        public async Task<User?> GetByEmailWithRolesAsync(string email, CancellationToken ct = default)
+        {
+            return await _dbContext.Users
+                .Include(u => u.UserRoles)       // JOIN Users me UserRoles
+                    .ThenInclude(ur => ur.Role)  // JOIN UserRoles me Roles
+                .FirstOrDefaultAsync(u => u.Email == email, ct);
+        }
+
+
     }
 }
