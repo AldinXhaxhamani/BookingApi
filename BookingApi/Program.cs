@@ -13,8 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 
 builder.Services.AddOpenApi();
 
@@ -26,33 +25,7 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
-/*
- * shtimi manual i nje useri ne db
- 
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-
-    //if (!context.Users.Any(u => u.Email == "aldin.xhaxhamani@gmail.com"))
-    //{
-        var hash = "password1";
-
-        var user = new User(
-            email: "aldin.xhaxhamani@gmail.com",
-            name: "Aldin",
-            lastName: "Xhaxhamani",
-            password: hash,
-            phoneNumber: "+123",
-            profileImageUrl: "UrlEFotos"
-        );
-
-        context.Users.Add(user);
-        context.SaveChanges();
-    //}
-}
-
-*/
 
 
 // Configure the HTTP request pipeline.
@@ -103,22 +76,21 @@ app.MapPost("/api/user/register",
     }).RequireAuthorization(policy => policy.RequireRole("User"));
 
 
+
 app.MapPost("/api/property/register",   
     async (CreatePropertyDto dto, [FromServices] IMediator mediator, CancellationToken ct) =>
     {
-        Console.WriteLine("1. Start");
+        
         var command = new RegisterPropertyCommand
         {
             createPropertyDto = dto
         };
-        Console.WriteLine("2. Start");
-
+  
         using var scope = app.Services.CreateScope();
         var handler = scope.ServiceProvider.GetService<IRequestHandler<RegisterPropertyCommand, Guid>>();
         Console.WriteLine(handler is null ? "Handler NOT registered" : "Handler registered");
 
         var id = await mediator.Send(command, ct);
-        Console.WriteLine("3. Start");
         //return Results.Created($"/api/users/{id}", new { id });
         return Results.Ok(id);
     });

@@ -1,6 +1,7 @@
 ﻿using Booking.Application;
 using Booking.Domain.Users;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
@@ -26,53 +27,61 @@ namespace Booking.Infrastructure
 
         public string GenerateToken(User user)
         {
-            //throw new NotImplementedException();
+            var signingCredentials = GetSigningCredentials();
+            var claims = GetClaims(user);
+            var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
-            var header= new Dictionary<string, string>()
-            {
-                { "alg", "HS256" },
-                { "typ", "JWT" }
-            };
-
-             var nowTime= DateTimeOffset.UtcNow;
-
-            var roles= user.UserRoles
-                .Select(ur => ur.Role.Name)
-                .ToArray();
-
-            var payload = new Dictionary<string, object>
-            {
-                ["sub"] = user.Id.ToString(),                          // user id
-                ["role"] = roles.Length == 1 ? roles[0] : roles,      // single string or array
-                ["exp"] = nowTime.AddMinutes(_jwtSettings.ExpirationMinutes)  // expiry(shtojme kohen we kemi tek json settings)
-                        .ToUnixTimeSeconds(),
-            };
+            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+        }
 
 
-            var headerEncoded = Base64Url.EncodeToString(
-            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(header))
-
-              );
-
-             var payloadEncoded = Base64Url.EncodeToString(
-                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload))
-                );
 
 
-            var signingInput = $"{headerEncoded}.{payloadEncoded}";
+        private SigningCredentials GetSigningCredentials()
+        {
+            
+            var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+
+            var secret = new SymmetricSecurityKey(key);
 
            
-            var signatureBytes = HMACSHA256.HashData(
-                Encoding.UTF8.GetBytes(_jwtSettings.SecretKey),  
-                Encoding.UTF8.GetBytes(signingInput)          
-            );
+            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+        }
 
-            var signature = Base64Url.EncodeToString(signatureBytes);
+       
 
+
+        private static List<Claim> GetClaims(User user)
+        {
           
-            return $"{signingInput}.{signature}";
+            var userRoles = user.UserRoles
+                .Select(ur => ur.Role)
+                .ToList();
 
+            var claims = new List<Claim>
+            {
+            
+                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            
+            };
 
+            claims.AddRange(userRoles
+                .Select(role => new Claim(ClaimTypes.Role, role.Name)));
+
+            return claims;
+        }
+
+        
+        private JwtSecurityToken GenerateTokenOptions(
+            SigningCredentials signingCredentials,
+            List<Claim> claims)
+        {
+            return new JwtSecurityToken(
+                claims: claims,
+                notBefore: DateTime.UtcNow,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes),
+                signingCredentials: signingCredentials
+            );
         }
     }
 }

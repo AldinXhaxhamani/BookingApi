@@ -62,8 +62,13 @@ namespace Booking.Infrastructure
                         ValidateIssuer = false,
                         ValidateAudience = false,   
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero
+                        ClockSkew = TimeSpan.Zero,
+
+                        RoleClaimType = "role"
+
                     };
+
+
                 });
 
 
