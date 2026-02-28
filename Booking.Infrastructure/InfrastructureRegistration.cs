@@ -5,11 +5,9 @@ using Booking.Infrastructure.Apartments;
 using Booking.Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Text;
 
 namespace Booking.Infrastructure
@@ -55,6 +53,8 @@ namespace Booking.Infrastructure
                 })
                 .AddJwtBearer(options =>
                 {
+                    options.MapInboundClaims = false;
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,

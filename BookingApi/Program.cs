@@ -5,6 +5,7 @@ using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
+using BookingApi.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +22,12 @@ builder.Services.ConfigureInfrastructureServices(builder.Configuration);
 builder.Services.ConfigureApplicationServices();
 
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -71,7 +76,7 @@ app.MapPost("/api/user/register",
         };
 
         var id = await mediator.Send(command, ct);
-        //return Results.Created($"/api/users/{id}", new { id });
+        return Results.Created($"/api/users/{id}", new { id });
         return Results.Ok(id);
     }).RequireAuthorization(policy => policy.RequireRole("User"));
 
@@ -103,6 +108,10 @@ app.MapGet("/dbtest", async (BookingDbContext db) =>
     return Results.Ok(new { users = count });
 });
 
+app.MapGet("/test/db-error", () =>
+{
+    throw new DbUpdateException("test", new Exception("inner"));
+});
 
 app.Run();
 

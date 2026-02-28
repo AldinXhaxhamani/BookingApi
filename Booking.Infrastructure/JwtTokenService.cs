@@ -2,15 +2,10 @@
 using Booking.Domain.Users;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
+
 
 
 namespace Booking.Infrastructure
@@ -65,8 +60,10 @@ namespace Booking.Infrastructure
             
             };
 
+
             claims.AddRange(userRoles
-                .Select(role => new Claim(ClaimTypes.Role, role.Name)));
+                .Select(role => new Claim("role", role.Name)));
+
 
             return claims;
         }
