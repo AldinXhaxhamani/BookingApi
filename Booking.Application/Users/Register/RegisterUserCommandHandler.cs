@@ -1,9 +1,11 @@
-﻿using MediatR;
-using BCrypt.Net;
+﻿using BCrypt.Net;
+using Booking.Domain.Users;
+using FluentValidation;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Booking.Domain.Users;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 
 namespace Booking.Application.Users.Register
@@ -12,6 +14,7 @@ namespace Booking.Application.Users.Register
     {
 
         private readonly IUserRepository _userRepository;
+        private readonly RegisterUserCommandValidation _validator;
         private readonly IApplicationContext _applicationContext;
 
         public RegisterUserCommandHandler(
@@ -20,6 +23,7 @@ namespace Booking.Application.Users.Register
             )
         {
             _userRepository = userRepository;
+            _validator = new RegisterUserCommandValidation();
            //_applicationContext = applicationContext;
         }
 
@@ -28,8 +32,23 @@ namespace Booking.Application.Users.Register
             RegisterUserCommand request,
             CancellationToken cancellationToken)
         {
-            
-            var password= request.createUserDto.Password;
+
+            var validationResult = await _validator.ValidateAsync(
+            request, cancellationToken);
+
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+
+            var emailExists = await _userRepository.ExistsWithEmailAsync(
+                request.createUserDto.Email, cancellationToken);
+
+            if (emailExists)
+                throw new InvalidOperationException( 
+                    $"Email '{request.createUserDto.Email}' is already registered.");
+
+
+            var password = request.createUserDto.Password;
 
            request.createUserDto.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password,13);
           

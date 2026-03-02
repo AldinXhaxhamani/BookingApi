@@ -26,6 +26,12 @@ namespace Booking.Infrastructure.Users
                 .FirstOrDefaultAsync(u => u.Email == email, ct);
         }
 
+        public async Task<bool> ExistsWithEmailAsync(string email, CancellationToken ct = default)
+        {
+            return await _dbContext.Users
+                .AnyAsync(u => u.Email == email, ct);
+        }
+
 
     }
 }

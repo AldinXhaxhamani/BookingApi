@@ -1,5 +1,6 @@
 using Booking.Application;
 using Booking.Application.Apartaments.Register;
+using Booking.Application.Login;
 using Booking.Application.Users.Register;
 using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
@@ -77,7 +78,7 @@ app.MapPost("/api/user/register",
 
         var id = await mediator.Send(command, ct);
         return Results.Created($"/api/users/{id}", new { id });
-        return Results.Ok(id);
+       
     }).RequireAuthorization(policy => policy.RequireRole("User"));
 
 
@@ -108,10 +109,15 @@ app.MapGet("/dbtest", async (BookingDbContext db) =>
     return Results.Ok(new { users = count });
 });
 
-app.MapGet("/test/db-error", () =>
-{
-    throw new DbUpdateException("test", new Exception("inner"));
-});
+app.MapPost("/auth/login", async (
+    LoginCommand command,
+    IMediator mediator,
+    CancellationToken ct) =>
+    {
+    var response = await mediator.Send(command, ct);
+    return Results.Ok(response);
+    });
+    
 
 app.Run();
 

@@ -9,5 +9,6 @@ namespace Booking.Application.Users
     public interface IUserRepository : IGenericRepository <User>
     {
         Task<User?> GetByEmailWithRolesAsync(string email, CancellationToken ct = default);
+        Task<bool> ExistsWithEmailAsync(string email, CancellationToken ct = default);
     }
 }
