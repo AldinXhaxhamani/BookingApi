@@ -8,5 +8,6 @@ namespace Booking.Application
     public interface IJwtTokenService
     {
         string GenerateToken(User user);
+        DateTime GetExpiration();
     }
 }

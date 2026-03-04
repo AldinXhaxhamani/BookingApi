@@ -80,5 +80,9 @@ namespace Booking.Infrastructure
                 signingCredentials: signingCredentials
             );
         }
+
+        public DateTime GetExpiration()
+            => DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
+
     }
 }

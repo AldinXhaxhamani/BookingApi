@@ -20,6 +20,8 @@ namespace Booking.Infrastructure
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Domain.Entities.Booking> Bookings { get; set; }
 
+        public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -44,9 +46,17 @@ namespace Booking.Infrastructure
                 .HasOne(p => p.Owner)
                 .WithMany()
                 .HasForeignKey(p => p.OwnerId)      
-                .HasPrincipalKey(o => o.UserId);    
+                .HasPrincipalKey(o => o.UserId);
 
 
+
+            modelBuilder.Entity<BlacklistedToken>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+                
+                entity.HasIndex(b => b.Token)
+                      .IsUnique();
+            });
 
 
 

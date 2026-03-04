@@ -1,6 +1,7 @@
 using Booking.Application;
 using Booking.Application.Apartaments.Register;
 using Booking.Application.Login;
+using Booking.Application.Logout;
 using Booking.Application.Users.Register;
 using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
@@ -10,6 +11,7 @@ using BookingApi.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 
@@ -117,7 +119,31 @@ app.MapPost("/auth/login", async (
     var response = await mediator.Send(command, ct);
     return Results.Ok(response);
     });
-    
+
+
+app.MapPost("/auth/logout", async (
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var accessToken = context.Request.Headers["Authorization"]
+        .ToString().Replace("Bearer ", "");
+
+    var userId = Guid.Parse(
+        context.User.FindFirstValue("sub")!);
+
+    var command = new LogoutCommand
+    {
+        AccessToken = accessToken,
+        UserId = userId
+    };
+
+    await mediator.Send(command, ct);
+
+    return Results.Ok(new { message = "Logged out successfully." });
+})
+.RequireAuthorization();
+
 
 app.Run();
 

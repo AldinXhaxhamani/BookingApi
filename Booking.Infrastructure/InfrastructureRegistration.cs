@@ -32,6 +32,7 @@ namespace Booking.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPropertyRepository, PropertyRepository>();
 
+            services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
 
 
             services.Configure<JwtSettings>(
@@ -60,7 +61,7 @@ namespace Booking.Infrastructure
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(key),
                         ValidateIssuer = false,
-                        ValidateAudience = false,   
+                        ValidateAudience = false,
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero,
 
@@ -68,8 +69,29 @@ namespace Booking.Infrastructure
 
                     };
 
+                    options.Events = new JwtBearerEvents
+                    {
 
+                        OnTokenValidated = async context =>
+                        {
+                            var blacklistRepo = context.HttpContext.RequestServices
+                                .GetRequiredService<ITokenBlacklistRepository>();
+
+                            var token = context.HttpContext.Request.Headers["Authorization"]
+                                .ToString().Replace("Bearer ", "");
+
+                            var isBlacklisted = await blacklistRepo.IsBlacklistedAsync(token);
+
+                            if (isBlacklisted)
+                                context.Fail("Token has been invalidated. Please login again.");
+                        },
+
+                    };
                 });
+
+
+
+
 
 
             services.AddAuthorization();
