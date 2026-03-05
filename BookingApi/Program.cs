@@ -2,6 +2,7 @@ using Booking.Application;
 using Booking.Application.Apartaments.Register;
 using Booking.Application.Login;
 using Booking.Application.Logout;
+using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
 using Booking.Domain.Apartments;
@@ -31,6 +32,8 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
+
+app.UseStaticFiles();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -164,6 +167,38 @@ app.MapPut("/api/user/update", async (
     return Results.Ok(updatedProfile);
 })
 .RequireAuthorization();
+
+
+
+app.MapPost("/api/user/uploadPhoto", async (
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    //merret file nga postman(ne rastin e testimit me postman)
+    var file = context.Request.Form.Files.FirstOrDefault();
+
+    if (file is null)
+        throw new InvalidOperationException("No file was uploaded.");
+
+    
+    var userId = Guid.Parse(context.User.FindFirstValue("sub")!);
+
+    var command = new UploadProfilePhotoCommand
+    {
+        UserId = userId,
+        FileStream = file.OpenReadStream(),
+        FileName = file.FileName,
+        ContentType = file.ContentType
+    };
+
+    var photoUrl = await mediator.Send(command, ct);
+
+    return Results.Ok(new { photoUrl });
+})
+.RequireAuthorization();
+
+
 
 
 

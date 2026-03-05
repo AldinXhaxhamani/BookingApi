@@ -8,7 +8,7 @@ using System.Text;
 namespace Booking.Domain.Users
 {
         public class User
-    {
+        {
 
         [Key]
         public Guid Id { get; set; }
@@ -61,6 +61,14 @@ namespace Booking.Domain.Users
                 PhoneNumber = phoneNumber;
                 LastModifiedAt = DateTime.UtcNow;
             }
+
+            public void UpdateProfilePhoto(string photoUrl)
+            {
+
+                ProfileImageUrl = photoUrl;
+                LastModifiedAt = DateTime.UtcNow;
+            }
+
 
         }
 }
