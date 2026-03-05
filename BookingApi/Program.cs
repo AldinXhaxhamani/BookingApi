@@ -3,6 +3,7 @@ using Booking.Application.Apartaments.Register;
 using Booking.Application.Login;
 using Booking.Application.Logout;
 using Booking.Application.Users.Register;
+using Booking.Application.Users.Update;
 using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
@@ -143,6 +144,27 @@ app.MapPost("/auth/logout", async (
     return Results.Ok(new { message = "Logged out successfully." });
 })
 .RequireAuthorization();
+
+
+app.MapPut("/api/user/update", async (
+    UpdateUserDto dto,
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var command = new UpdateUserCommand
+    {
+
+        UserId = Guid.Parse(context.User.FindFirstValue("sub")!),
+        updateUserDto = dto
+    };
+
+    var updatedProfile = await mediator.Send(command, ct);
+
+    return Results.Ok(updatedProfile);
+})
+.RequireAuthorization();
+
 
 
 app.Run();

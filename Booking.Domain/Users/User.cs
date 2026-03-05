@@ -51,7 +51,16 @@ namespace Booking.Domain.Users
                 userDto.Email, userDto.Password,userDto.PhoneNumber, data);
         }
 
+            public void UpdatePersonalInfo(
+                string firstName,
+                string lastName,
+                string phoneNumber)
+            {
+                Name = firstName;
+                LastName = lastName;
+                PhoneNumber = phoneNumber;
+                LastModifiedAt = DateTime.UtcNow;
+            }
 
-
-    }
+        }
 }

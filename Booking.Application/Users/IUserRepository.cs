@@ -10,5 +10,6 @@ namespace Booking.Application.Users
     {
         Task<User?> GetByEmailWithRolesAsync(string email, CancellationToken ct = default);
         Task<bool> ExistsWithEmailAsync(string email, CancellationToken ct = default);
+        Task<User?> GetByIdWithRolesAsync(Guid userId, CancellationToken ct= default);
     }
 }

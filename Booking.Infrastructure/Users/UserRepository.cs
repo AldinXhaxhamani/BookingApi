@@ -33,5 +33,12 @@ namespace Booking.Infrastructure.Users
         }
 
 
+        public async Task<User?> GetByIdWithRolesAsync(Guid userId, CancellationToken ct = default)
+        {
+            return await _dbContext.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId, ct);
+        }
     }
 }
