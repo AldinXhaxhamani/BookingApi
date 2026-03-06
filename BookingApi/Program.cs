@@ -2,9 +2,11 @@ using Booking.Application;
 using Booking.Application.Apartaments.Register;
 using Booking.Application.Login;
 using Booking.Application.Logout;
+using Booking.Application.Users.ChangePassword;
 using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
+using Booking.Application.Users.ChangePassword;
 using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
@@ -85,7 +87,7 @@ app.MapPost("/api/user/register",
         var id = await mediator.Send(command, ct);
         return Results.Created($"/api/users/{id}", new { id });
        
-    }).RequireAuthorization(policy => policy.RequireRole("User"));
+    });
 
 
 
@@ -199,6 +201,20 @@ app.MapPost("/api/user/uploadPhoto", async (
 .RequireAuthorization();
 
 
+app.MapPut("/api/user/changePassword", async (
+    ChangePasswordCommand command,
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+
+    command.UserId = Guid.Parse(context.User.FindFirstValue("sub")!);
+
+    await mediator.Send(command, ct);
+
+    return Results.Ok(new { message = "Password changed successfully." });
+})
+.RequireAuthorization();
 
 
 

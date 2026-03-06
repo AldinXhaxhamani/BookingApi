@@ -70,5 +70,12 @@ namespace Booking.Domain.Users
             }
 
 
-        }
+            public void ChangePassword(string newPasswordHash)
+            {
+                Password = newPasswordHash;
+                LastModifiedAt = DateTime.UtcNow;
+            }
+
+
+        }   
 }
