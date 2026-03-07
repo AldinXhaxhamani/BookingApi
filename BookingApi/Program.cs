@@ -2,11 +2,12 @@ using Booking.Application;
 using Booking.Application.Apartaments.Register;
 using Booking.Application.Login;
 using Booking.Application.Logout;
+using Booking.Application.Roles.Assign;
+using Booking.Application.Users.ChangePassword;
 using Booking.Application.Users.ChangePassword;
 using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
-using Booking.Application.Users.ChangePassword;
 using Booking.Domain.Apartments;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
@@ -216,6 +217,18 @@ app.MapPut("/api/user/changePassword", async (
 })
 .RequireAuthorization();
 
+
+
+app.MapPost("/api/admin/assignRrole", async (
+    AssignRoleCommand command,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    await mediator.Send(command, ct);
+
+    return Results.Ok(new { message = $"Role '{command.RoleName}' assigned successfully." });
+})
+.RequireAuthorization(p => p.RequireRole("Admin"));
 
 
 app.Run();
