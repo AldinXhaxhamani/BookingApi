@@ -1,4 +1,6 @@
 ﻿using BCrypt.Net;
+using Booking.Application.Roles;
+using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using FluentValidation;
 using MediatR;
@@ -15,16 +17,19 @@ namespace Booking.Application.Users.Register
 
         private readonly IUserRepository _userRepository;
         private readonly RegisterUserCommandValidation _validator;
+        private readonly IRoleRepository _roleRepository;
         private readonly IApplicationContext _applicationContext;
 
         public RegisterUserCommandHandler(
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            IRoleRepository roleRepository
             //IApplicationContext applicationContext
             )
         {
             _userRepository = userRepository;
             _validator = new RegisterUserCommandValidation();
-           //_applicationContext = applicationContext;
+            _roleRepository = roleRepository;
+            //_applicationContext = applicationContext;
         }
 
         
@@ -53,7 +58,15 @@ namespace Booking.Application.Users.Register
            request.createUserDto.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password,13);
           
             var user = User.CreateUser(request.createUserDto);
-           
+
+
+            var guestRole = await _roleRepository.GetByNameAsync("Guest", cancellationToken);
+
+            var userRole = new UserRole(user.Id, guestRole.Id); 
+            user.UserRoles.Add(userRole);//e ruajme lidhjen ne tabelen UserRoles
+
+
+
             await _userRepository.Add(user);
 
             await _userRepository.SaveChangesAsync();

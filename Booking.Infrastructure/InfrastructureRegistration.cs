@@ -1,7 +1,9 @@
 ﻿using Booking.Application;
 using Booking.Application.Apartaments;
+using Booking.Application.Roles;
 using Booking.Application.Users;
 using Booking.Infrastructure.Apartments;
+using Booking.Infrastructure.Roles;
 using Booking.Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -31,8 +33,9 @@ namespace Booking.Infrastructure
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPropertyRepository, PropertyRepository>();
-
+            
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
 
             services.Configure<JwtSettings>(
