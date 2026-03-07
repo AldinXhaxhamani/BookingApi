@@ -92,23 +92,25 @@ app.MapPost("/api/user/register",
 
 
 
-app.MapPost("/api/property/register",   
-    async (CreatePropertyDto dto, [FromServices] IMediator mediator, CancellationToken ct) =>
+app.MapPost("/api/property/register",
+    async (
+    CreatePropertyDto dto,
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
     {
-        
+        var ownerId = Guid.Parse(context.User.FindFirstValue("sub")!); // ← from JWT
+
         var command = new RegisterPropertyCommand
         {
-            createPropertyDto = dto
+            OwnerId = ownerId,
+            CreatePropertyDto = dto
         };
-  
-        using var scope = app.Services.CreateScope();
-        var handler = scope.ServiceProvider.GetService<IRequestHandler<RegisterPropertyCommand, Guid>>();
-        Console.WriteLine(handler is null ? "Handler NOT registered" : "Handler registered");
 
-        var id = await mediator.Send(command, ct);
-        //return Results.Created($"/api/users/{id}", new { id });
-        return Results.Ok(id);
-    });
+        var propertyId = await mediator.Send(command, ct);
+        return Results.Ok(new { propertyId });
+
+    }).RequireAuthorization(p => p.RequireRole("Owner"));
 
 
 //Testimi i lidhjes me db

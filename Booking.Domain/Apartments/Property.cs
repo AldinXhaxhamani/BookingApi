@@ -1,129 +1,113 @@
 ﻿using Booking.Domain.Entities;
 using Booking.Domain.Enum;
 using Booking.Domain.Users;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Booking.Domain.Apartments
 {
     public class Property
     {
+
         [Key]
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }
         public Guid AddressId { get; set; }
-        public string Name { get; set; }
-        public string? Description { get; set; }
-        public string PropertyType { get; set; } //kete mund ta ndryshojme ne nje enum nese duam
-        public int MaxGuests { get; set; }
-        public DateTime CheckInTime { get; set; }
-        public DateTime CheckOutTime { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsApproved { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastModifiedAt { get; set; }
+        public string Name { get; private set; } = string.Empty;
+        public string? Description { get; private set; }
+
+        //ruhen si int ne DB — enum in code 
+        public PropertyType PropertyType { get; private set; }
+
+        
+        public string? AmenitiesRaw { get; private set; }
+
+        public int MaxGuests { get; private set; }
+        public DateTime CheckInTime { get; private set; }
+        public DateTime CheckOutTime { get; private set; }
+        public string? Rules { get; private set; }
+        public decimal PricePerNight { get; private set; }
+        public string? PhotoUrl { get; private set; }
+        public bool IsActive { get; private set; }
+        public bool IsApproved { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public DateTime LastModifiedAt { get; private set; }
         public DateTime? LastBookedOnUtc { get; set; }
-
-
         public OwnerProfile Owner { get; set; } = null!;
         public Address Address { get; set; } = null!;
 
+        
 
 
+        public List<Amenity> Amenities =>
+            string.IsNullOrEmpty(AmenitiesRaw)
+                ? new List<Amenity>()
+                : AmenitiesRaw
+                    .Split(',')
+                    .Select(a => (Amenity)int.Parse(a))
+                    .ToList();
 
-        public Property(
-            Guid id,
+        private Property() { }
+
+        public static Property CreateProperty(
+            CreatePropertyDto dto,
             Guid ownerId,
-            string name,
-            string description,
-            string propertyType , 
-            Guid addressId, 
-            int maxGuests, 
-            DateTime checkInTime,     
-            DateTime checkOutTime)
-           //List<Amenity> amenities
-
+            Guid addressId)
         {
-            Id = Guid.NewGuid();
-            OwnerId = ownerId;
-            Name = name;
-            Description = description;
-            PropertyType = propertyType;
-            AddressId = addressId;
-            MaxGuests = maxGuests;
-            CheckInTime = checkInTime;
-            CheckOutTime= checkOutTime;
-            IsActive = true;
-            IsApproved = false; //properties are not approved by default
-            CreatedAt = DateTime.UtcNow;
-            LastModifiedAt = DateTime.UtcNow;
-            //Amenities = amenities;
-
+            return new Property
+            {
+                Id = Guid.NewGuid(),
+                OwnerId = ownerId,
+                AddressId = addressId,
+                Name = dto.Name,
+                Description = dto.Description,
+                PropertyType = dto.PropertyType,
+                AmenitiesRaw = string.Join(",",
+                    dto.Amenities.Select(a => (int)a)), // [WiFi,Parking] → "1,3"
+                MaxGuests = dto.MaxGuests,
+                CheckInTime = DateTime.UtcNow.Date.AddHours(dto.CheckInHour),
+                CheckOutTime = DateTime.UtcNow.Date.AddHours(dto.CheckOutHour),
+                Rules = dto.Rules,
+                PricePerNight = dto.PricePerNight,
+                IsActive = true,
+                IsApproved = false,
+                CreatedAt = DateTime.UtcNow,
+                LastModifiedAt = DateTime.UtcNow
+            };
         }
 
-        public Property(
-            Guid propertyId,
-            Guid ownerId,
+        public void UpdateInfo(
             string name,
-            Guid addressId,
-            string description,
+            string? description,
+            PropertyType propertyType,
+            List<Amenity> amenities,
             int maxGuests,
-            string propertyType,
-            DateTime checkInTime,
-            DateTime checkOutTime,
-            DateTime createdAt,
-            bool isActive
-            //List<Amenity> amenties
-            )
+            int checkInHour,
+            int checkOutHour,
+            string? rules,
+            decimal pricePerNight)
         {
-            Id = propertyId;
-            OwnerId = ownerId;
             Name = name;
-            AddressId = addressId;
             Description = description;
-            MaxGuests = maxGuests;
             PropertyType = propertyType;
-            CheckInTime = checkInTime;
-            CheckOutTime = checkOutTime;
-            CreatedAt = createdAt;
-            IsActive = isActive;
-
-
-
-            //Amenities = amentie
+            AmenitiesRaw = string.Join(",", amenities.Select(a => (int)a));
+            MaxGuests = maxGuests;
+            CheckInTime = DateTime.UtcNow.Date.AddHours(checkInHour);
+            CheckOutTime = DateTime.UtcNow.Date.AddHours(checkOutHour);
+            Rules = rules;
+            PricePerNight = pricePerNight;
+            LastModifiedAt = DateTime.UtcNow;
         }
 
-
-
-      
-        public static Property CreateProperty(CreatePropertyDto propertyDto, OwnerProfile propertyOwner)
+        public void UpdatePhoto(string photoUrl)
         {
-
-            var checkInTime = DateTime.UtcNow.Date.AddHours(14);
-            var checkOutTime = DateTime.UtcNow.Date.AddDays(1).AddHours(11);
-            var createdAt = DateTime.Now;
-            var isActive = true;
-            return new Property(
-                 Guid.NewGuid(),
-                 propertyOwner.UserId,
-                 propertyDto.Name,
-                 propertyDto.AddressId,
-                 propertyDto.Description,
-                 propertyDto.MaxGuests,
-                 propertyDto.PropertyType,
-                 checkInTime,
-                 checkOutTime,
-                 createdAt,
-                 isActive
-
-
-                //propertyDto.Amenities
-
-                );
+            PhotoUrl = photoUrl;
+            LastModifiedAt = DateTime.UtcNow;
         }
-
-
     }
 }

@@ -4,6 +4,7 @@ using Booking.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Infrastructure.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    partial class BookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260307105214_AddPropertyFields")]
+    partial class AddPropertyFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,11 +83,16 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<string>("Rules")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
 
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Properties");
                 });
@@ -361,6 +369,10 @@ namespace Booking.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Booking.Domain.Users.User", null)
+                        .WithMany("Properties")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Address");
 
                     b.Navigation("Owner");
@@ -452,6 +464,8 @@ namespace Booking.Infrastructure.Migrations
             modelBuilder.Entity("Booking.Domain.Users.User", b =>
                 {
                     b.Navigation("Owner");
+
+                    b.Navigation("Properties");
 
                     b.Navigation("UserRoles");
                 });

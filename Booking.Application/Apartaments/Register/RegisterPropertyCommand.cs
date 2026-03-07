@@ -8,6 +8,8 @@ namespace Booking.Application.Apartaments.Register
 {
     public class RegisterPropertyCommand : IRequest<Guid>
     {
-        public CreatePropertyDto createPropertyDto { get; set; }
+        public Guid OwnerId { get; set; }
+        public CreatePropertyDto CreatePropertyDto { get; set; }
+
     }
 }

@@ -25,7 +25,7 @@ namespace Booking.Domain.Users
 
         public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public OwnerProfile? Owner { get; set; }
-        public List<Property> Properties { get; set; } = new List<Property>();
+        
 
 
         public User(Guid id, string firstName, string lastName, string email, string password,string phoneNumber, DateTime createdAt)

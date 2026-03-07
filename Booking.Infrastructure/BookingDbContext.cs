@@ -18,10 +18,12 @@ namespace Booking.Infrastructure
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Property> Properties { get; set; }
         public DbSet<Review> Reviews { get; set; }
+       
         public DbSet<Domain.Entities.Booking> Bookings { get; set; }
 
         public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
 
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

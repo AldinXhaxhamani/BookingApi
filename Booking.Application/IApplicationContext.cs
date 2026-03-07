@@ -14,6 +14,9 @@ namespace Booking.Application
 
         public DbSet<Property> Properties { get; }
         public DbSet<OwnerProfile> Owners { get; }
+
+        public DbSet<Address> Addresses { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
