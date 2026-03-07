@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 namespace Booking.Infrastructure
@@ -87,6 +88,24 @@ namespace Booking.Infrastructure
 
                             if (isBlacklisted)
                                 context.Fail("Token has been invalidated. Please login again.");
+
+
+
+                            //kontrollojme nese Useri qe mund te kete tokenin aktiv eshte fshire
+                            var userRepo = context.HttpContext.RequestServices
+                                .GetRequiredService<IUserRepository>();
+
+                            var userIdClaim = context.Principal?.FindFirstValue("sub");
+
+                            if (userIdClaim is not null && Guid.TryParse(userIdClaim, out var userId))
+                            //out var userId, krijo nje variabel userId nese parsimi eshte i suksesshem
+                            {
+                                var user = await userRepo.GetByIdWithRolesAsync(userId);
+
+                                if (user is not null && !user.IsActive)
+                                    context.Fail("Your account has been deactivated.");
+                            }
+
                         },
 
                     };

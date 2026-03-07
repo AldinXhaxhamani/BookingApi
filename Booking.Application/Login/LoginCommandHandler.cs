@@ -49,7 +49,9 @@ namespace Booking.Application.Login
                 request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid email or password.");
 
-
+            if (!user.IsActive)
+                throw new UnauthorizedAccessException(
+                    "Your account has been deactivated. Please contact administrator.");
 
             var token = _jwtTokenService.GenerateToken(user);
 

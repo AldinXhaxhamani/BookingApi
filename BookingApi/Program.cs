@@ -4,7 +4,7 @@ using Booking.Application.Login;
 using Booking.Application.Logout;
 using Booking.Application.Roles.Assign;
 using Booking.Application.Users.ChangePassword;
-using Booking.Application.Users.ChangePassword;
+using Booking.Application.Users.Delete;
 using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
@@ -229,6 +229,36 @@ app.MapPost("/api/admin/assignRrole", async (
     return Results.Ok(new { message = $"Role '{command.RoleName}' assigned successfully." });
 })
 .RequireAuthorization(p => p.RequireRole("Admin"));
+
+
+app.MapDelete("/api/admin/deleteUser", async (
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+
+    var email = context.Request.Query["email"].ToString();
+
+    if (string.IsNullOrEmpty(email))
+        throw new InvalidOperationException("Email is required.");
+
+    // marrim AdminId nga JWT
+    var adminId = Guid.Parse(context.User.FindFirstValue("sub")!);
+
+    var command = new DeleteUserCommand
+    {
+        TargetEmail = email,
+        AdminId = adminId
+    };
+
+    await mediator.Send(command, ct);
+
+    return Results.Ok(new { message = $"User '{email}' deactivated successfully." });
+})
+.RequireAuthorization(p => p.RequireRole("Admin"));
+
+
+
 
 
 app.Run();

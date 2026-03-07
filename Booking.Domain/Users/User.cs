@@ -76,6 +76,12 @@ namespace Booking.Domain.Users
                 LastModifiedAt = DateTime.UtcNow;
             }
 
+            public void Deactivate()
+            {
+            IsActive = false;
+            LastModifiedAt = DateTime.UtcNow;
+            }
 
-        }   
+
+    }   
 }
