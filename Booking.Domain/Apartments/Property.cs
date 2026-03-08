@@ -90,7 +90,8 @@ namespace Booking.Domain.Apartments
             int checkInHour,
             int checkOutHour,
             string? rules,
-            decimal pricePerNight)
+            decimal pricePerNight,
+            Guid addressId)
         {
             Name = name;
             Description = description;
@@ -102,6 +103,7 @@ namespace Booking.Domain.Apartments
             Rules = rules;
             PricePerNight = pricePerNight;
             LastModifiedAt = DateTime.UtcNow;
+            AddressId= addressId;
         }
 
         public void UpdatePhoto(string photoUrl)

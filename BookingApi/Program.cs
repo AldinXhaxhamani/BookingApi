@@ -1,5 +1,6 @@
 using Booking.Application;
 using Booking.Application.Apartaments.Register;
+using Booking.Application.Apartaments.Update;
 using Booking.Application.Login;
 using Booking.Application.Logout;
 using Booking.Application.Roles.Assign;
@@ -260,7 +261,24 @@ app.MapDelete("/api/admin/deleteUser", async (
 .RequireAuthorization(p => p.RequireRole("Admin"));
 
 
+app.MapPut("/api/property/update/{propertyId}", async (
+    Guid propertyId,
+    CreatePropertyDto dto,      
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var command = new UpdatePropertyCommand
+    {
+        PropertyId = propertyId,
+        OwnerId = Guid.Parse(context.User.FindFirstValue("sub")!),
+        Dto = dto
+    };
 
+    await mediator.Send(command, ct);
+    return Results.Ok(new { message = "Property updated successfully." });
+})
+.RequireAuthorization(p => p.RequireRole("Owner"));
 
 
 app.Run();
