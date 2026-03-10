@@ -38,6 +38,7 @@ namespace Booking.Infrastructure
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
 
+            services.AddScoped<IPropertyAvailabilityRepository, PropertyAvailabilityRepository>();
 
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings"));

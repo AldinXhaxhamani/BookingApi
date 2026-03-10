@@ -23,7 +23,10 @@ namespace Booking.Infrastructure
 
         public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
 
-        
+        public DbSet<PropertyMonthlyAvailability> PropertyAvailabilities { get; set; }
+        public DbSet<PropertySeasonPrice> PropertySeasonPrices { get; set; }
+        public DbSet<PropertyDiscount> PropertyDiscounts { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -60,7 +63,44 @@ namespace Booking.Infrastructure
                       .IsUnique();
             });
 
+            modelBuilder.Entity<PropertyMonthlyAvailability>()
+                .HasOne(a => a.Property)
+                .WithMany()
+                .HasForeignKey(a => a.PropertyId);
 
+            // 1 rresht per cdo property per nje muaj per nje vit
+            modelBuilder.Entity<PropertyMonthlyAvailability>()
+                .HasIndex(a => new { a.PropertyId, a.Year, a.Month })
+                .IsUnique();
+
+
+            modelBuilder.Entity<PropertySeasonPrice>()
+                .HasOne(s => s.Property)
+                .WithMany()
+                .HasForeignKey(s => s.PropertyId);
+
+            modelBuilder.Entity<PropertySeasonPrice>()
+                .Property(s => s.PricePerNight)
+                .HasPrecision(18, 2);
+
+            // only one row per property per season
+            modelBuilder.Entity<PropertySeasonPrice>()
+                .HasIndex(s => new { s.PropertyId, s.Season })
+                .IsUnique();
+
+            modelBuilder.Entity<PropertyDiscount>()
+                .HasOne(d => d.Property)
+                .WithMany()
+                .HasForeignKey(d => d.PropertyId);
+
+            modelBuilder.Entity<PropertyDiscount>()
+                .Property(d => d.DiscountPerNight)
+                .HasPrecision(18, 2);
+
+            // only one discount per property
+            modelBuilder.Entity<PropertyDiscount>()
+                .HasIndex(d => d.PropertyId)
+                .IsUnique();
 
 
             base.OnModelCreating(modelBuilder);

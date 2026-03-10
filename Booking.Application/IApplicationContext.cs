@@ -17,6 +17,10 @@ namespace Booking.Application
 
         public DbSet<Address> Addresses { get; }
 
+        public DbSet<PropertyMonthlyAvailability> PropertyAvailabilities { get; }
+        public DbSet<PropertySeasonPrice> PropertySeasonPrices { get; }
+        public DbSet<PropertyDiscount> PropertyDiscounts { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Booking.Domain.Entities;
+﻿using Booking.Domain.Apartments.DTOs;
+using Booking.Domain.Entities;
 using Booking.Domain.Enum;
 using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -41,7 +42,8 @@ namespace Booking.Domain.Apartments
         public OwnerProfile Owner { get; set; } = null!;
         public Address Address { get; set; } = null!;
 
-        
+        public int MinimumStayNights { get; private set; } = 1;
+        public int MaximumStayNights { get; private set; } = 365;
 
 
         public List<Amenity> Amenities =>
@@ -109,6 +111,35 @@ namespace Booking.Domain.Apartments
         public void UpdatePhoto(string photoUrl)
         {
             PhotoUrl = photoUrl;
+            LastModifiedAt = DateTime.UtcNow;
+        }
+
+
+        public void SetMinimumStay(int minimumNights)
+        {
+            if (minimumNights < 1)
+                throw new InvalidOperationException(
+                    "Minimum stay must be at least 1 night.");
+
+            if (minimumNights > MaximumStayNights)
+                throw new InvalidOperationException(
+                    "Minimum stay cannot exceed maximum stay.");
+
+            MinimumStayNights = minimumNights;
+            LastModifiedAt = DateTime.UtcNow;
+        }
+
+        public void SetMaximumStay(int maximumNights)
+        {
+            if (maximumNights < 1)
+                throw new InvalidOperationException(
+                    "Maximum stay must be at least 1 night.");
+
+            if (maximumNights < MinimumStayNights)
+                throw new InvalidOperationException(
+                    "Maximum stay cannot be less than minimum stay.");
+
+            MaximumStayNights = maximumNights;
             LastModifiedAt = DateTime.UtcNow;
         }
     }

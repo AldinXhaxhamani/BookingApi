@@ -1,4 +1,4 @@
-﻿using Booking.Domain.Apartments;
+﻿using Booking.Domain.Apartments.DTOs;
 using MediatR;
 using System;
 using System.Collections.Generic;

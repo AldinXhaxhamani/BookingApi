@@ -1,5 +1,9 @@
 using Booking.Application;
+using Booking.Application.Apartaments.Availability;
+using Booking.Application.Apartaments.Discount;
+using Booking.Application.Apartaments.NewFolder;
 using Booking.Application.Apartaments.Register;
+using Booking.Application.Apartaments.Stay_Duration;
 using Booking.Application.Apartaments.Update;
 using Booking.Application.Login;
 using Booking.Application.Logout;
@@ -9,7 +13,7 @@ using Booking.Application.Users.Delete;
 using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
-using Booking.Domain.Apartments;
+using Booking.Domain.Apartments.DTOs;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
@@ -279,6 +283,69 @@ app.MapPut("/api/property/update/{propertyId}", async (
     return Results.Ok(new { message = "Property updated successfully." });
 })
 .RequireAuthorization(p => p.RequireRole("Owner"));
+
+
+
+app.MapGet("/api/property/{propertyId}/availability", async (
+    Guid propertyId, IMediator mediator, CancellationToken ct) =>
+{
+    var result = await mediator.Send(
+        new GetPropertyAvailabilityQuery { PropertyId = propertyId }, ct);
+    return Results.Ok(result);
+});
+
+
+
+
+// Set season price — Owner only 
+app.MapPost("/api/property/{propertyId}/season-price", async (
+    Guid propertyId, SetSeasonPriceCommand command,
+    HttpContext context, IMediator mediator, CancellationToken ct) =>
+{
+    command.PropertyId = propertyId;
+    command.OwnerId = Guid.Parse(context.User.FindFirstValue("sub")!);
+    await mediator.Send(command, ct);
+    return Results.Ok(new { message = "Season price set successfully." });
+})
+.RequireAuthorization(p => p.RequireRole("Owner"));
+
+//Set discount — Owner only 
+app.MapPost("/api/property/{propertyId}/discount", async (
+    Guid propertyId, SetDiscountCommand command,
+    HttpContext context, IMediator mediator, CancellationToken ct) =>
+{
+    command.PropertyId = propertyId;
+    command.OwnerId = Guid.Parse(context.User.FindFirstValue("sub")!);
+    await mediator.Send(command, ct);
+    return Results.Ok(new { message = "Discount set successfully." });
+})
+.RequireAuthorization(p => p.RequireRole("Owner"));
+
+// Set minimum stay — Owner only 
+app.MapPut("/api/property/{propertyId}/minimum-stay", async (
+    Guid propertyId, SetMinimumStayCommand command,
+    HttpContext context, IMediator mediator, CancellationToken ct) =>
+{
+    command.PropertyId = propertyId;
+    command.OwnerId = Guid.Parse(context.User.FindFirstValue("sub")!);
+    await mediator.Send(command, ct);
+    return Results.Ok(new { message = "Minimum stay updated." });
+})
+.RequireAuthorization(p => p.RequireRole("Owner"));
+
+//Set maximum stay — Owner only 
+app.MapPut("/api/property/{propertyId}/maximum-stay", async (
+    Guid propertyId, SetMaximumStayCommand command,
+    HttpContext context, IMediator mediator, CancellationToken ct) =>
+{
+    command.PropertyId = propertyId;
+    command.OwnerId = Guid.Parse(context.User.FindFirstValue("sub")!);
+    await mediator.Send(command, ct);
+    return Results.Ok(new { message = "Maximum stay updated." });
+})
+.RequireAuthorization(p => p.RequireRole("Owner"));
+
+
 
 
 app.Run();

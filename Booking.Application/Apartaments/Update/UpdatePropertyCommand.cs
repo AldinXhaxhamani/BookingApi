@@ -1,4 +1,4 @@
-﻿using Booking.Domain.Apartments;
+﻿using Booking.Domain.Apartments.DTOs;
 using Booking.Domain.Enum;
 using MediatR;
 using System;
