@@ -1,0 +1,51 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Booking.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddRatingAndBookingCount : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<double>(
+                name: "AverageRating",
+                table: "Properties",
+                type: "float",
+                nullable: false,
+                defaultValue: 0.0);
+
+            migrationBuilder.AddColumn<int>(
+                name: "BookingCount",
+                table: "Properties",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<int>(
+                name: "ReviewCount",
+                table: "Properties",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "AverageRating",
+                table: "Properties");
+
+            migrationBuilder.DropColumn(
+                name: "BookingCount",
+                table: "Properties");
+
+            migrationBuilder.DropColumn(
+                name: "ReviewCount",
+                table: "Properties");
+        }
+    }
+}

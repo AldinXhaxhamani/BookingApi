@@ -22,7 +22,7 @@ namespace Booking.Domain.Entities
         public User Guest { get; set; } = null!;
 
         [ForeignKey(nameof(BookingId))]
-        public Booking Booking { get; set; } = null!;
+        public BookingEntity Booking { get; set; } = null!;
 
         public Review() { }
     }

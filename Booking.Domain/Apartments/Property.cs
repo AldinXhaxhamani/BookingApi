@@ -45,6 +45,13 @@ namespace Booking.Domain.Apartments
         public int MinimumStayNights { get; private set; } = 1;
         public int MaximumStayNights { get; private set; } = 365;
 
+        public double AverageRating { get; private set; } = 0;
+        public int ReviewCount { get; private set; } = 0;
+        public int BookingCount { get; private set; } = 0;
+
+
+
+
 
         public List<Amenity> Amenities =>
             string.IsNullOrEmpty(AmenitiesRaw)
@@ -142,5 +149,14 @@ namespace Booking.Domain.Apartments
             MaximumStayNights = maximumNights;
             LastModifiedAt = DateTime.UtcNow;
         }
+
+        public void UpdateRating(double newAverage, int reviewCount)
+        {
+            AverageRating = newAverage;
+            ReviewCount = reviewCount;
+        }
+
+        public void IncrementBookingCount() => BookingCount++;
+
     }
 }

@@ -63,5 +63,14 @@ namespace Booking.Application.Apartaments
 
         Task AddDiscountAsync(PropertyDiscount discount,
             CancellationToken ct = default);
+
+
+
+        Task<List<PropertyMonthlyAvailability>> GetForPropertiesAsync(
+            List<Guid> propertyIds,
+            CancellationToken ct = default);
+
     }
+
+
 }

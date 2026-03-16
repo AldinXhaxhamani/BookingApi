@@ -173,6 +173,20 @@ namespace Booking.Infrastructure.Apartments
         }
 
 
+        public async Task<List<PropertyMonthlyAvailability>> GetForPropertiesAsync(
+            List<Guid> propertyIds, CancellationToken ct = default)
+
+        {
+            return await _context.PropertyAvailabilities
+                .Where(a => propertyIds.Contains(a.PropertyId))
+                .ToListAsync(ct);
+        }
+
+
+
+
+
+
         //funksione ndihmes
         private async Task<PropertyMonthlyAvailability> GetOrCreateMonthAsync(
             Guid propertyId, int year, int month, CancellationToken ct)

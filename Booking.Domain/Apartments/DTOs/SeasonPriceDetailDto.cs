@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Booking.Domain.Apartments.DTOs
 {
-    public class SeasonPriceDto
+    public class SeasonPriceDetailDto
     {
         public string Season { get; set; } = string.Empty;
         public decimal PricePerNight { get; set; }

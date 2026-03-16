@@ -21,6 +21,10 @@ namespace Booking.Application
         public DbSet<PropertySeasonPrice> PropertySeasonPrices { get; }
         public DbSet<PropertyDiscount> PropertyDiscounts { get; }
 
+        public DbSet<Review> Reviews { get; }
+
+        public DbSet<BookingEntity> Bookings { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Booking.Domain.Entities
 {
-    public class Booking
+    public class BookingEntity
     {
         [Key]
         public Guid Id { get; set; }
@@ -45,7 +45,7 @@ namespace Booking.Domain.Entities
         public Review? Review { get; set; }
 
 
-     public Booking(Guid propertyId,
+     public BookingEntity(Guid propertyId,
         Guid guestId,
         DateTime startDate,
         DateTime endDate,
@@ -70,7 +70,7 @@ namespace Booking.Domain.Entities
             CreatedAtUtc = DateTime.UtcNow;
         }
 
-        protected Booking() { }
+        protected BookingEntity() { }
 
 
     }

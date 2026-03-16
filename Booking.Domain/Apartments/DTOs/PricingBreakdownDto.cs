@@ -4,14 +4,10 @@ using System.Text;
 
 namespace Booking.Domain.Apartments.DTOs
 {
-    public class PropertyAvailabilityDto
+    public class PricingBreakdownDto
     {
 
-        public Guid PropertyId { get; set; }
-        public int MinimumStayNights { get; set; }
-        public int MaximumStayNights { get; set; }
         public decimal BasePricePerNight { get; set; }
-        public List<MonthAvailabilityDto> Availability { get; set; } = new();
         public List<SeasonPriceDetailDto> SeasonPrices { get; set; } = new();
         public DiscountDetailDto? Discount { get; set; }
 

@@ -90,12 +90,12 @@ namespace Booking.Application.Apartaments.Availability
                 MaximumStayNights = property.MaximumStayNights,
                 BasePricePerNight = property.PricePerNight,
                 Availability = availability,
-                SeasonPrices = seasons.Select(s => new SeasonPriceDto
+                SeasonPrices = seasons.Select(s => new SeasonPriceDetailDto
                 {
                     Season = s.Season.ToString(),
                     PricePerNight = s.PricePerNight
                 }).ToList(),
-                Discount = discount is null ? null : new DiscountDto
+                Discount = discount is null ? null : new DiscountDetailDto
                 {
                     MinimumNights = discount.MinimumNights,
                     DiscountPerNight = discount.DiscountPerNight

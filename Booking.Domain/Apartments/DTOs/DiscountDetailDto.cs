@@ -4,10 +4,12 @@ using System.Text;
 
 namespace Booking.Domain.Apartments.DTOs
 {
-    public class DiscountDto
+    public class DiscountDetailDto
     {
         public int MinimumNights { get; set; }
         public decimal DiscountPerNight { get; set; }
+
+        public string Description { get; set; }
 
     }
 }

@@ -3,6 +3,8 @@ using Booking.Application.Apartaments.Availability;
 using Booking.Application.Apartaments.Discount;
 using Booking.Application.Apartaments.NewFolder;
 using Booking.Application.Apartaments.Register;
+using Booking.Application.Apartaments.Search;
+using Booking.Application.Apartaments.Search.Get;
 using Booking.Application.Apartaments.Stay_Duration;
 using Booking.Application.Apartaments.Update;
 using Booking.Application.Login;
@@ -17,6 +19,7 @@ using Booking.Domain.Apartments.DTOs;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
+using BookingApi.Binders;
 using BookingApi.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -345,6 +348,28 @@ app.MapPut("/api/property/{propertyId}/maximum-stay", async (
 })
 .RequireAuthorization(p => p.RequireRole("Owner"));
 
+
+
+app.MapGet("/api/properties/search", async (
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var query = SearchPropertiesQueryBinder.BindFromRequest(context);
+    var result = await mediator.Send(query, ct);
+    return Results.Ok(result);
+});
+
+// Property details
+app.MapGet("/api/property/{propertyId}/details", async (
+    Guid propertyId,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var result = await mediator.Send(
+        new GetPropertyDetailsQuery { PropertyId = propertyId }, ct);
+    return Results.Ok(result);
+});
 
 
 
