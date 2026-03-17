@@ -1,5 +1,7 @@
 ﻿using Booking.Domain.Apartments;
+using Booking.Domain.Bookings;
 using Booking.Domain.Entities;
+using Booking.Domain.Reviews;
 using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using System;

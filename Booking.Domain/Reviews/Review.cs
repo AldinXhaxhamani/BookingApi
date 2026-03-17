@@ -1,11 +1,12 @@
-﻿using Booking.Domain.Users;
+﻿using Booking.Domain.Bookings;
+using Booking.Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace Booking.Domain.Entities
+namespace Booking.Domain.Reviews
 {
     public class Review
     {

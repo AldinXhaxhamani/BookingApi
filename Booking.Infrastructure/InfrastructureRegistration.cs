@@ -1,8 +1,10 @@
 ﻿using Booking.Application;
 using Booking.Application.Apartaments;
+using Booking.Application.Bookings;
 using Booking.Application.Roles;
 using Booking.Application.Users;
 using Booking.Infrastructure.Apartments;
+using Booking.Infrastructure.Bookings;
 using Booking.Infrastructure.Roles;
 using Booking.Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,6 +41,8 @@ namespace Booking.Infrastructure
             services.AddScoped<IRoleRepository, RoleRepository>();
 
             services.AddScoped<IPropertyAvailabilityRepository, PropertyAvailabilityRepository>();
+
+            services.AddScoped<IBookingRepository, BookingRepository>();
 
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings"));

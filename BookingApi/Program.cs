@@ -7,6 +7,7 @@ using Booking.Application.Apartaments.Search;
 using Booking.Application.Apartaments.Search.Get;
 using Booking.Application.Apartaments.Stay_Duration;
 using Booking.Application.Apartaments.Update;
+using Booking.Application.Bookings.Create;
 using Booking.Application.Login;
 using Booking.Application.Logout;
 using Booking.Application.Roles.Assign;
@@ -370,6 +371,23 @@ app.MapGet("/api/property/{propertyId}/details", async (
         new GetPropertyDetailsQuery { PropertyId = propertyId }, ct);
     return Results.Ok(result);
 });
+
+
+app.MapPost("/api/book/{propertyId}", async (
+    Guid propertyId,
+    CreateBookingCommand command,
+    HttpContext context,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    command.PropertyId = propertyId;
+    command.GuestId = Guid.Parse(
+        context.User.FindFirstValue("sub")!);
+
+    var result = await mediator.Send(command, ct);
+    return Results.Ok(result);
+})
+.RequireAuthorization();
 
 
 

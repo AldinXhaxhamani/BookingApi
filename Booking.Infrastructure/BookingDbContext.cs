@@ -1,7 +1,9 @@
 ﻿using Booking.Application;
 using Booking.Domain.Apartments;
+using Booking.Domain.Bookings;
 using Booking.Domain.Entities;
 using Booking.Domain.Review;
+using Booking.Domain.Reviews;
 using Booking.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -20,7 +22,7 @@ namespace Booking.Infrastructure
         public DbSet<Property> Properties { get; set; }
         public DbSet<Review> Reviews { get; set; }
        
-        public DbSet<Domain.Entities.BookingEntity> Bookings { get; set; }
+        public DbSet<BookingEntity> Bookings { get; set; }
 
         public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
 
