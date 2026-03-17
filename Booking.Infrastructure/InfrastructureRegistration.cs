@@ -1,10 +1,12 @@
 ﻿using Booking.Application;
 using Booking.Application.Apartaments;
 using Booking.Application.Bookings;
+using Booking.Application.Email;
 using Booking.Application.Roles;
 using Booking.Application.Users;
 using Booking.Infrastructure.Apartments;
 using Booking.Infrastructure.Bookings;
+using Booking.Infrastructure.Email;
 using Booking.Infrastructure.Roles;
 using Booking.Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -43,6 +45,16 @@ namespace Booking.Infrastructure
             services.AddScoped<IPropertyAvailabilityRepository, PropertyAvailabilityRepository>();
 
             services.AddScoped<IBookingRepository, BookingRepository>();
+
+            
+            services.Configure<SendGridSettings>(
+                configuration.GetSection("SendGrid"));
+
+            
+            services.AddScoped<IEmailService, SendGridEmailService>();
+
+
+
 
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings"));

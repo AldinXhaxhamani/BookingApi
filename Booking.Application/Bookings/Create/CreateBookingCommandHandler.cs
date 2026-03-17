@@ -1,8 +1,11 @@
 ﻿using Booking.Application.Apartaments;
-using Booking.Domain.Bookings.Dtos;
-using Booking.Domain.Enum;
+using Booking.Application.Email;
 using Booking.Domain.Bookings;
+using Booking.Domain.Bookings.Dtos;
+using Booking.Domain.Email;
+using Booking.Domain.Enum;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,20 +19,26 @@ namespace Booking.Application.Bookings.Create
         private readonly IPropertyRepository _propertyRepository;
         private readonly IPropertyAvailabilityRepository _availabilityRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IEmailService _emailService;              
+        private readonly IApplicationContext _context;
 
-        // business rules — fixed at platform level
+
         private const decimal CleaningFeeAmount = 25m;
-        private const decimal ServiceFeeRate = 0.10m;  // 10%
-        private const decimal TaxRate = 0.08m;  // 8% on subtotal
+        private const decimal ServiceFeeRate = 0.10m;  
+        private const decimal TaxRate = 0.08m;  
 
         public CreateBookingCommandHandler(
             IPropertyRepository propertyRepository,
             IPropertyAvailabilityRepository availabilityRepository,
-            IBookingRepository bookingRepository)
+            IBookingRepository bookingRepository,
+            IEmailService emailService,                          
+            IApplicationContext context)
         {
             _propertyRepository = propertyRepository;
             _availabilityRepository = availabilityRepository;
             _bookingRepository = bookingRepository;
+            _emailService = emailService;
+            _context = context; 
         }
 
         public async Task<CreateBookingResponseDto> Handle(
@@ -39,7 +48,7 @@ namespace Booking.Application.Bookings.Create
             var checkOut = request.CheckOut.Date;
             var nights = (checkOut - checkIn).Days;
 
-            // ── Step 1: Validate input — no DB calls yet ───────────
+            // Validate input 
             if (checkIn < DateTime.UtcNow.Date)
                 throw new InvalidOperationException(
                     "Check-in date cannot be in the past.");
@@ -56,7 +65,7 @@ namespace Booking.Application.Bookings.Create
                 throw new InvalidOperationException(
                     "At least 1 guest is required.");
 
-            // ── Step 2: Load property ──────────────────────────────
+            // Load property
             var property = await _propertyRepository
                 .GetById(request.PropertyId, ct);
 
@@ -67,13 +76,13 @@ namespace Booking.Application.Bookings.Create
                 throw new InvalidOperationException(
                     "This property is not available for booking.");
 
-            // ── Step 3: Validate guests ────────────────────────────
+            // Validate guests 
             if (request.GuestCount > property.MaxGuests)
                 throw new InvalidOperationException(
                     $"This property allows a maximum of " +
                     $"{property.MaxGuests} guests.");
 
-            // ── Step 4: Validate stay duration ─────────────────────
+            // Validate stay duration
             if (nights < property.MinimumStayNights)
                 throw new InvalidOperationException(
                     $"Minimum stay for this property is " +
@@ -84,7 +93,7 @@ namespace Booking.Application.Bookings.Create
                     $"Maximum stay for this property is " +
                     $"{property.MaximumStayNights} nights.");
 
-            // ── Step 5: Check availability ─────────────────────────
+            // Check availability 
             var isAvailable = await _availabilityRepository
                 .AreDatesAvailableAsync(
                     request.PropertyId, checkIn, checkOut, ct);
@@ -93,7 +102,7 @@ namespace Booking.Application.Bookings.Create
                 throw new InvalidOperationException(
                     "The selected dates are not available.");
 
-            // ── Step 6: Calculate price ────────────────────────────
+            // Calculate price
             // get season price if exists — otherwise use base price
             var season = SeasonHelper.GetSeason(checkIn);
             var seasonPrice = await _availabilityRepository
@@ -133,7 +142,9 @@ namespace Booking.Application.Bookings.Create
             // total = subtotal + service fee + tax
             var totalPrice = subtotal + serviceFee + taxAmount;
 
-            // ── Step 7: Create booking entity ──────────────────────
+
+
+            // Create booking entity 
             var booking = BookingEntity.Create(
                 propertyId: request.PropertyId,
                 guestId: request.GuestId,
@@ -145,19 +156,60 @@ namespace Booking.Application.Bookings.Create
                 amenitiesUpCharge: amenitiesUpCharge,
                 totalPrice: totalPrice);
 
-            // ── Step 8: Remove dates from availability ─────────────
-            // staged before SaveChanges — both succeed or both fail
+            // Remove dates from availability
             await _availabilityRepository.RemoveBookedDatesAsync(
                 request.PropertyId, checkIn, checkOut, ct);
 
-            // ── Step 9: Increment booking count ────────────────────
+            // Increment booking count 
             property.IncrementBookingCount();
 
-            // ── Step 10: Save everything in one transaction ────────
+            //Save everything in one transaction
             await _bookingRepository.AddAsync(booking, ct);
             await _bookingRepository.SaveChangesAsync(ct);
 
-            // ── Step 11: Return price breakdown to guest ───────────
+
+            //dergimi i email tek useri
+
+            var guest = await _context.Users
+                .Where(u => u.Id == request.GuestId)
+                .Select(u => new { u.Email, u.Name, u.LastName })
+                .FirstOrDefaultAsync(ct);
+
+            var propertyAddress = await _context.Addresses
+                .Where(a => a.Id == property.AddressId)
+                .Select(a => new { a.City, a.Country })
+                .FirstOrDefaultAsync(ct);
+
+            if (guest is not null)
+            {
+                var emailDto = new BookingEmailDto
+                {
+                    GuestEmail = guest.Email,
+                    GuestName = $"{guest.Name} {guest.LastName}",
+                    BookingId = booking.Id,
+                    PropertyName = property.Name,
+                    PropertyCity = propertyAddress?.City ?? string.Empty,
+                    PropertyCountry = propertyAddress?.Country ?? string.Empty,
+                    CheckIn = booking.StartDate,
+                    CheckOut = booking.EndDate,
+                    Nights = nights,
+                    GuestCount = booking.GuestCount,
+                    PriceForPeriod = booking.PriceForPeriod,
+                    CleaningFee = booking.CleaningFee,
+                    AmenitiesUpCharge = booking.AmenitiesUpCharge,
+                    ServiceFee = serviceFee,
+                    TaxAmount = taxAmount,
+                    TotalPrice = booking.TotalPrice,
+                    ExpiresAtUtc = booking.ExpiresAtUtc!.Value
+                };
+
+                await _emailService
+                    .SendBookingConfirmationToGuestAsync(emailDto, ct);
+            }
+
+
+
+            // response to the client
             return new CreateBookingResponseDto
             {
                 BookingId = booking.Id,
@@ -179,7 +231,7 @@ namespace Booking.Application.Bookings.Create
         }
 
         
-        // Pool=5, Gym=6, Spa=7 → $10 per premium amenity per stay
+       
         private static decimal CalculateAmenitiesUpCharge(string? amenitiesRaw)
         {
             if (string.IsNullOrEmpty(amenitiesRaw))
