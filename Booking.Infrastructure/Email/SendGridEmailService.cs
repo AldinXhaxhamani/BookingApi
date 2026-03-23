@@ -147,7 +147,7 @@ namespace Booking.Infrastructure.Email
             <h2>💰 Price Breakdown</h2>
             <div class=""row""><span>Period price (: {b.Nights} nights)</span><span>${b.PriceForPeriod:F2}</span></div>
             <div class=""row""><span>Cleaning fee</span><span>$: {b.CleaningFee:F2}</span></div>
-            <div class=""row""><span>Amenities charge</span><span>$: {b.AmenitiesUpCharge:F2}</span></div>
+            <div class=""row""><span>Amenities charge</span><span> :${b.AmenitiesUpCharge:F2}</span></div>
             <div class=""row""><span>Service fee (10%)</span><span>$: {b.ServiceFee:F2}</span></div>
             <div class=""row""><span>Tax (8%)</span><span>$: {b.TaxAmount:F2}</span></div>
             <div class=""row total""><span>Total</span><span>$: {b.TotalPrice:F2}</span></div>

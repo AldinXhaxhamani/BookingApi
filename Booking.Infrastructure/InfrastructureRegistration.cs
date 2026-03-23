@@ -2,11 +2,13 @@
 using Booking.Application.Apartaments;
 using Booking.Application.Bookings;
 using Booking.Application.Email;
+using Booking.Application.Notifications;
 using Booking.Application.Roles;
 using Booking.Application.Users;
 using Booking.Infrastructure.Apartments;
 using Booking.Infrastructure.Bookings;
 using Booking.Infrastructure.Email;
+using Booking.Infrastructure.Notifications;
 using Booking.Infrastructure.Roles;
 using Booking.Infrastructure.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,7 +55,8 @@ namespace Booking.Infrastructure
             
             services.AddScoped<IEmailService, SendGridEmailService>();
 
-
+            
+            services.AddScoped<INotificationService, NotificationService>();
 
 
             services.Configure<JwtSettings>(
@@ -90,8 +93,31 @@ namespace Booking.Infrastructure
 
                     };
 
+
+
+
                     options.Events = new JwtBearerEvents
+
                     {
+
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            // vetem kerkesat qe shkojne ne Hub e notifications
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/notifications"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        },
+
+
+
+
 
                         OnTokenValidated = async context =>
                         {

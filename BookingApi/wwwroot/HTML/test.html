@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Notifications Test</title>
+
+    <!-- SignalR client library — must match your server version -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .btn-connect    { background: #27ae60; color: white; }
+        .btn-disconnect { background: #e74c3c; color: white; }
+        .btn-book       { background: #2980b9; color: white; }
+        .btn-clear      { background: #95a5a6; color: white; }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .status.connected    { background: #d5f5e3; color: #1e8449; }
+        .status.disconnected { background: #fadbd8; color: #c0392b; }
+        .status.connecting   { background: #fef9e7; color: #d35400; }
+
+        .notification {
+            background: #eaf4fb;
+            border-left: 4px solid #2980b9;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification .title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .notification .row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #555;
+            padding: 3px 0;
+        }
+
+        .notification .total {
+            font-weight: bold;
+            color: #2c3e50;
+            border-top: 1px solid #ccc;
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .notification .timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 6px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 13px;
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        .log .log-info    { color: #2ecc71; }
+        .log .log-error   { color: #e74c3c; }
+        .log .log-warning { color: #f39c12; }
+        .log .log-message { color: #3498db; }
+
+        .empty {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🔔 Booking Notification Tester</h1>
+
+<!-- Step 1 — Connection -->
+<div class="card">
+    <h2>Step 1 — Connect to Hub</h2>
+
+    <div id="statusBadge" class="status disconnected">
+        ● Disconnected
+    </div>
+
+    <input
+        type="text"
+        id="tokenInput"
+        placeholder="Paste your JWT token here (without 'Bearer')"
+    />
+
+    <div>
+        <button class="btn-connect"    id="btnConnect">Connect</button>
+        <button class="btn-disconnect" id="btnDisconnect" disabled>Disconnect</button>
+    </div>
+</div>
+
+<!-- Step 2 — Create Booking -->
+<div class="card">
+    <h2>Step 2 — Create a Booking</h2>
+
+    <div class="grid">
+        <input type="text"   id="propertyId" placeholder="Property ID (GUID)" />
+        <input type="text"   id="apiBase"    placeholder="API URL e.g. https://localhost:7239" value="https://localhost:7239" />
+        <input type="date"   id="checkIn"    />
+        <input type="date"   id="checkOut"   />
+        <input type="number" id="guestCount" placeholder="Number of guests" value="2" />
+    </div>
+
+    <button class="btn-book" id="btnBook">Create Booking</button>
+</div>
+
+<!-- Notifications -->
+<div class="card">
+    <h2>
+        🔔 Received Notifications
+        <button class="btn-clear" style="float:right; font-size:12px; padding:4px 10px;"
+                onclick="clearNotifications()">Clear</button>
+    </h2>
+    <div id="notificationList">
+        <div class="empty">No notifications yet — connect and create a booking</div>
+    </div>
+</div>
+
+<!-- Connection Log -->
+<div class="card">
+    <h2>Connection Log</h2>
+    <div class="log" id="log"></div>
+</div>
+
+
+<script>
+    let connection = null;
+
+    // ── Logging ────────────────────────────────────────────────────
+    function log(message, type = 'info') {
+        const logEl  = document.getElementById('log');
+        const time   = new Date().toLocaleTimeString();
+        const line   = document.createElement('div');
+        line.className = `log-${type}`;
+        line.textContent = `[${time}] ${message}`;
+        logEl.appendChild(line);
+        // auto scroll to bottom
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // ── Status badge ───────────────────────────────────────────────
+    function setStatus(status) {
+        const badge = document.getElementById('statusBadge');
+        const states = {
+            connected:    { text: '● Connected',    css: 'connected'    },
+            disconnected: { text: '● Disconnected', css: 'disconnected' },
+            connecting:   { text: '● Connecting…',  css: 'connecting'   }
+        };
+        const s = states[status];
+        badge.textContent  = s.text;
+        badge.className    = `status ${s.css}`;
+    }
+
+    // ── Connect ────────────────────────────────────────────────────
+    document.getElementById('btnConnect').addEventListener('click', async () => {
+        const token  = document.getElementById('tokenInput').value.trim();
+        const apiUrl = document.getElementById('apiBase').value.trim()
+                       || 'https://localhost:7239';
+
+        if (!token) {
+            alert('Please paste your JWT token first.');
+            return;
+        }
+
+        setStatus('connecting');
+        log('Connecting to hub…', 'warning');
+
+        // build SignalR connection
+        // token passed as query string — WebSocket cannot use headers
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl(`${apiUrl}/notifications?access_token=${token}`)
+            // automatic reconnect — tries after 0s, 2s, 10s, 30s
+            .withAutomaticReconnect([0, 2000, 10000, 30000])
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // ── Listen for BookingCreated event ────────────────────────
+        // "BookingCreated" must match exactly what the server sends
+        // this is the event name in SendAsync("BookingCreated", ...)
+        connection.on('BookingCreated', (notification) => {
+            log(`Notification received: BookingCreated`, 'message');
+            showNotification(notification);
+        });
+
+        // ── Connection lifecycle events ────────────────────────────
+        connection.onreconnecting(() => {
+            setStatus('connecting');
+            log('Connection lost — reconnecting…', 'warning');
+        });
+
+        connection.onreconnected(() => {
+            setStatus('connected');
+            log('Reconnected successfully', 'info');
+        });
+
+        connection.onclose(() => {
+            setStatus('disconnected');
+            log('Connection closed', 'error');
+            document.getElementById('btnConnect').disabled    = false;
+            document.getElementById('btnDisconnect').disabled = true;
+        });
+
+        try {
+            await connection.start();
+            setStatus('connected');
+            log('Connected successfully ✅', 'info');
+            document.getElementById('btnConnect').disabled    = true;
+            document.getElementById('btnDisconnect').disabled = false;
+        } catch (err) {
+            setStatus('disconnected');
+            log(`Connection failed: ${err.message}`, 'error');
+        }
+    });
+
+    // ── Disconnect ─────────────────────────────────────────────────
+    document.getElementById('btnDisconnect').addEventListener('click', async () => {
+        if (connection) {
+            await connection.stop();
+            log('Disconnected manually', 'warning');
+        }
+    });
+
+    // ── Create Booking ─────────────────────────────────────────────
+    document.getElementById('btnBook').addEventListener('click', async () => {
+        const token      = document.getElementById('tokenInput').value.trim();
+        const apiUrl     = document.getElementById('apiBase').value.trim()
+                           || 'https://localhost:7239';
+        const propertyId = document.getElementById('propertyId').value.trim();
+        const checkIn    = document.getElementById('checkIn').value;
+        const checkOut   = document.getElementById('checkOut').value;
+        const guestCount = parseInt(document.getElementById('guestCount').value);
+
+        if (!token || !propertyId || !checkIn || !checkOut) {
+            alert('Please fill in all booking fields and connect first.');
+            return;
+        }
+
+        log(`Creating booking for property ${propertyId}…`, 'warning');
+
+        try {
+            // POST to your booking endpoint
+            // Authorization header carries JWT for HTTP requests
+            const response = await fetch(
+                `${apiUrl}/api/property/${propertyId}/book`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':  'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        checkIn,
+                        checkOut,
+                        guestCount
+                    })
+                }
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                log(`Booking created ✅ ID: ${result.bookingId}`, 'info');
+                log(`Total: $${result.totalPrice} | Status: ${result.status}`, 'info');
+                log('Waiting for WebSocket notification…', 'warning');
+            } else {
+                const error = await response.json();
+                log(`Booking failed: ${error.message || response.statusText}`, 'error');
+            }
+        } catch (err) {
+            log(`Request error: ${err.message}`, 'error');
+        }
+    });
+
+    // ── Render notification card ───────────────────────────────────
+    function showNotification(n) {
+        const list = document.getElementById('notificationList');
+
+        // remove empty state message
+        const empty = list.querySelector('.empty');
+        if (empty) empty.remove();
+
+        const checkIn  = new Date(n.checkIn).toLocaleDateString('en-GB',
+            { day: '2-digit', month: 'short', year: 'numeric' });
+        const checkOut = new Date(n.checkOut).toLocaleDateString('en-GB',
+            { day: '2-digit', month: 'short', year: 'numeric' });
+        const expires  = new Date(n.expiresAtUtc).toLocaleString();
+
+        const card = document.createElement('div');
+        card.className = 'notification';
+        card.innerHTML = `
+            <div class="title">🏠 ${n.propertyName}</div>
+            <div class="row"><span>Booking ID</span><span>${n.bookingId}</span></div>
+            <div class="row"><span>Status</span><span>${n.status}</span></div>
+            <div class="row"><span>Check-in</span><span>${checkIn}</span></div>
+            <div class="row"><span>Check-out</span><span>${checkOut}</span></div>
+            <div class="row"><span>Nights</span><span>${n.nights}</span></div>
+            <div class="row total"><span>Total Price</span><span>$${n.totalPrice.toFixed(2)}</span></div>
+            <div class="row"><span>Expires</span><span>${expires}</span></div>
+            <div class="timestamp">
+                ⚠️ ${n.message}
+            </div>
+        `;
+
+        // prepend — newest notification appears at the top
+        list.insertBefore(card, list.firstChild);
+    }
+
+    // ── Clear notifications ────────────────────────────────────────
+    function clearNotifications() {
+        const list = document.getElementById('notificationList');
+        list.innerHTML = '<div class="empty">No notifications yet</div>';
+    }
+
+    // ── Set default dates ──────────────────────────────────────────
+    // sets today + 7 days as default check-in/out
+    const today    = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+
+    const fmt = d => d.toISOString().split('T')[0];
+    document.getElementById('checkIn').value  = fmt(today);
+    document.getElementById('checkOut').value = fmt(nextWeek);
+</script>
+
+</body>
+</html>

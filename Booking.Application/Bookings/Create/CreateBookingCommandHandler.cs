@@ -1,9 +1,11 @@
 ﻿using Booking.Application.Apartaments;
 using Booking.Application.Email;
+using Booking.Application.Notifications;
 using Booking.Domain.Bookings;
 using Booking.Domain.Bookings.Dtos;
 using Booking.Domain.Email;
 using Booking.Domain.Enum;
+using Booking.Domain.Notifications;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,6 +23,7 @@ namespace Booking.Application.Bookings.Create
         private readonly IBookingRepository _bookingRepository;
         private readonly IEmailService _emailService;              
         private readonly IApplicationContext _context;
+        private readonly INotificationService _notificationService;
 
 
         private const decimal CleaningFeeAmount = 25m;
@@ -32,13 +35,15 @@ namespace Booking.Application.Bookings.Create
             IPropertyAvailabilityRepository availabilityRepository,
             IBookingRepository bookingRepository,
             IEmailService emailService,                          
-            IApplicationContext context)
+            IApplicationContext context,
+            INotificationService notificationService)
         {
             _propertyRepository = propertyRepository;
             _availabilityRepository = availabilityRepository;
             _bookingRepository = bookingRepository;
             _emailService = emailService;
             _context = context; 
+            _notificationService = notificationService;
         }
 
         public async Task<CreateBookingResponseDto> Handle(
@@ -207,7 +212,22 @@ namespace Booking.Application.Bookings.Create
                     .SendBookingConfirmationToGuestAsync(emailDto, ct);
             }
 
+            var notificationDto = new BookingNotificationDto
+            {
+                BookingId = booking.Id,
+                PropertyName = property.Name,
+                Status = booking.BookingStatus.ToString(),
+                CheckIn = booking.StartDate,
+                CheckOut = booking.EndDate,
+                Nights = nights,
+                TotalPrice = booking.TotalPrice,
+                ExpiresAtUtc = booking.ExpiresAtUtc!.Value,
+                Message = "Your booking request has been submitted. " +
+                   "Awaiting owner confirmation."
+            };
 
+            await _notificationService.NotifyBookingCreatedAsync(
+                request.GuestId, notificationDto, ct);
 
             // response to the client
             return new CreateBookingResponseDto

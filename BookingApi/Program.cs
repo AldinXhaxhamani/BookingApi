@@ -17,6 +17,7 @@ using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
 using Booking.Domain.Apartments.DTOs;
+using Booking.Infrastructure.Notifications;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
@@ -41,6 +42,9 @@ builder.Services.ConfigureApplicationServices();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+builder.Services.AddSignalR();
+
 
 var app = builder.Build();
 
@@ -389,6 +393,8 @@ app.MapPost("/api/book/{propertyId}", async (
 })
 .RequireAuthorization();
 
+
+app.MapHub<NotificationHub>("/notifications");
 
 
 app.Run();
