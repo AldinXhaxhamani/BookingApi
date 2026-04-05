@@ -8,6 +8,7 @@ using Booking.Application.Apartaments.Search.Get;
 using Booking.Application.Apartaments.Stay_Duration;
 using Booking.Application.Apartaments.Update;
 using Booking.Application.Bookings.Create;
+using Booking.Application.Logging;
 using Booking.Application.Login;
 using Booking.Application.Logout;
 using Booking.Application.Roles.Assign;
@@ -17,12 +18,13 @@ using Booking.Application.Users.Photo;
 using Booking.Application.Users.Register;
 using Booking.Application.Users.Update;
 using Booking.Domain.Apartments.DTOs;
-using Booking.Infrastructure.Notifications;
 using Booking.Domain.Entities;
 using Booking.Domain.Users;
 using Booking.Infrastructure;
+using Booking.Infrastructure.Notifications;
 using BookingApi.Binders;
 using BookingApi.Exceptions;
+using BookingApi.Logging;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +47,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddSignalR();
 
+builder.Services.AddSingleton<IKafkaLoggingProducer, KafkaLoggingProducer>();
+
 
 var app = builder.Build();
 
@@ -54,6 +58,8 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 
 // Configure the HTTP request pipeline.
